@@ -1,0 +1,10 @@
+POST http://localhost:8080/rag/add
+Content-Type: application/json
+
+{
+  "documents": [
+    {
+      "text": "<document content>"
+    }
+  ]
+}
