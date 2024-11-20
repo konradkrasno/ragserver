@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: weaviate
+  name: weaviate
+  namespace: rag
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: weaviate
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: weaviate
+    spec:
+      containers:
+      - image: cr.weaviate.io/semitechnologies/weaviate:1.27.1
+        name: weaviate
+        resources: {}
