@@ -1,4 +1,4 @@
 #!/bin/bash
 
-kubectl create -f ./k8s/namespace
-kubectl create -f ./k8s/app
+kubectl apply -f ./k8s/namespace
+kubectl apply -f ./k8s/app

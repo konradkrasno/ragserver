@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: weaviate
+  namespace: rag
+spec:
+  selector:
+    app: weaviate
+  ports:
+    - name: http
+      port: 9035
+      targetPort: 9035
