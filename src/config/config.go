@@ -11,6 +11,8 @@ type Config struct {
 	AppPort                  string `yaml:"appPort"`
 	WvHost                   string `yaml:"wvHost"`
 	WvPort                   string `yaml:"wvPort"`
+	OllamaHost               string `yaml:"ollamaHost"`
+	OllamaPort               string `yaml:"ollamaPort"`
 	IndexName                string `yaml:"indexName"`
 	DocumentsRetrievalNumber int    `yaml:"documentsRetrievalNumber"`
 }
