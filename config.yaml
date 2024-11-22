@@ -1,9 +1,9 @@
 llm: "llama3.2"
 scheme: "http"
 appPort: "8080"
-wvHost: "rag.weaviate.svc.cluster.local"
+wvHost: "weaviate.rag.svc.cluster.local"
 wvPort: "9035"
-ollamaHost: "rag.ollama.svc.cluster.local"
+ollamaUrl: "http://ollama.rag.svc.cluster.local"
 ollamaPort: "11434"
 indexName: "Document"
 documentsRetrievalNumber: 3

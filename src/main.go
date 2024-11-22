@@ -20,7 +20,7 @@ func main() {
 	ctx := context.Background()
 
 	ollamaClient, err := ollama.New(
-		ollama.WithServerURL(fmt.Sprintf("%s:%s", cfg.OllamaHost, cfg.OllamaPort)),
+		ollama.WithServerURL(fmt.Sprintf("%s:%s", cfg.OllamaUrl, cfg.OllamaPort)),
 		ollama.WithModel(cfg.LLM),
 	)
 	if err != nil {
