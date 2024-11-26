@@ -8,5 +8,6 @@ spec:
     app: weaviate
   ports:
     - name: http
-      port: 9035
-      targetPort: 9035
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

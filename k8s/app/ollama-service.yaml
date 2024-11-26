@@ -6,7 +6,7 @@ metadata:
 spec:
   type: ClusterIP
   selector:
-    name: ollama
+    app: ollama
   ports:
     - name: http
       port: 11434
