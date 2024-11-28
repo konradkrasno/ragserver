@@ -1,7 +1,0 @@
-llm: "llama3.2"
-scheme: "http"
-appPort: "8080"
-wvHost: "localhost"
-wvPort: "9035"
-indexName: "Document"
-documentsRetrievalNumber: 3
