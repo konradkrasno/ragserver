@@ -8,7 +8,6 @@ import (
 type Config struct {
 	LLM                      string `yaml:"llm"`
 	Scheme                   string `yaml:"scheme"`
-	AppPort                  string `yaml:"appPort"`
 	WvHost                   string `yaml:"wvHost"`
 	WvPort                   string `yaml:"wvPort"`
 	OllamaUrl                string `yaml:"ollamaUrl"`
