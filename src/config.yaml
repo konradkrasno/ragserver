@@ -1,4 +1,4 @@
-llm: "llama3.2"
+llm: "llama3.2:1b"
 scheme: "http"
 appPort: "8000"
 wvHost: "weaviate.rag.svc.cluster.local"
