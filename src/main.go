@@ -2,24 +2,32 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/konradkrasno/ragserver/broker"
+	"github.com/konradkrasno/ragserver/config"
 	"github.com/konradkrasno/ragserver/rag"
 	"github.com/konradkrasno/ragserver/server"
-	"os"
 )
 
 func runServer() {
-	appPort := os.Getenv("APP_PORT")
-	if appPort == "" {
-		panic("APP_PORT environment variable not set")
-	}
-
-	r, err := rag.New()
+	cfg, err := config.LoadConfig("./config.yaml")
 	if err != nil {
 		panic(err)
 	}
-	s := server.New(gin.Default(), r)
 
-	err = s.Run(appPort)
+	b, err := broker.NewMQBroker(cfg.QueueUrl)
+	if err != nil {
+		panic(err)
+	}
+	defer b.Close()
+
+	r, err := rag.New(cfg, b)
+	if err != nil {
+		panic(err)
+	}
+
+	s := server.New(cfg, gin.Default(), r, b)
+
+	err = s.Run()
 	if err != nil {
 		panic(err)
 	}

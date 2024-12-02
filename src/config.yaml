@@ -1,9 +1,11 @@
+appPort: 8000
 llm: "llama3.2:1b"
 scheme: "http"
-appPort: "8000"
 wvHost: "weaviate.rag.svc.cluster.local"
 wvPort: "8080"
 ollamaUrl: "http://ollama.rag.svc.cluster.local"
 ollamaPort: "11434"
 indexName: "Document"
 documentsRetrievalNumber: 3
+queueUrl: "amqp://guest:guest@rabbit.rag.svc.cluster.local:5672/%2f"
+answerQueue: "answers"

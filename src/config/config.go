@@ -6,6 +6,7 @@ import (
 )
 
 type Config struct {
+	AppPort                  string `yaml:"appPort"`
 	LLM                      string `yaml:"llm"`
 	Scheme                   string `yaml:"scheme"`
 	WvHost                   string `yaml:"wvHost"`
@@ -14,6 +15,8 @@ type Config struct {
 	OllamaPort               string `yaml:"ollamaPort"`
 	IndexName                string `yaml:"indexName"`
 	DocumentsRetrievalNumber int    `yaml:"documentsRetrievalNumber"`
+	QueueUrl                 string `yaml:"queueUrl"`
+	AnswerQueue              string `yaml:"answerQueue"`
 }
 
 func LoadConfig(path string) (*Config, error) {

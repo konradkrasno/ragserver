@@ -2,7 +2,9 @@ package rag
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
+	"github.com/konradkrasno/ragserver/broker"
 	"github.com/konradkrasno/ragserver/config"
 	"github.com/konradkrasno/ragserver/models"
 	"github.com/tmc/langchaingo/embeddings"
@@ -10,6 +12,7 @@ import (
 	"github.com/tmc/langchaingo/llms/ollama"
 	"github.com/tmc/langchaingo/schema"
 	"github.com/tmc/langchaingo/vectorstores/weaviate"
+	"log"
 	"strings"
 )
 
@@ -18,14 +21,10 @@ type Rag struct {
 	Config    *config.Config
 	WvStore   weaviate.Store
 	LLMClient llms.Model
+	Broker    broker.Broker
 }
 
-func New() (*Rag, error) {
-	cfg, err := config.LoadConfig("./config.yaml")
-	if err != nil {
-		return nil, err
-	}
-
+func New(cfg *config.Config, broker broker.Broker) (*Rag, error) {
 	ctx := context.Background()
 
 	ollamaClient, err := ollama.New(
@@ -56,6 +55,7 @@ func New() (*Rag, error) {
 		Config:    cfg,
 		WvStore:   wvStore,
 		LLMClient: ollamaClient,
+		Broker:    broker,
 	}, nil
 }
 
@@ -91,12 +91,19 @@ func (rs *Rag) query(qr models.QueryRequest) (string, error) {
 
 func (rs *Rag) Query(qr models.QueryRequest) {
 	answer, err := rs.query(qr)
-
 	if err != nil {
-		fmt.Println("error occurred:", err)
+		log.Println(err)
+		answer = fmt.Sprintf("error occurred: %s", err)
 	}
-	fmt.Println("answer:", answer)
 
-	// todo: save results in db
-	// todo: send results to Websocket
+	resp := models.QueryResponse{
+		Query:  qr.Content,
+		Answer: answer,
+	}
+	data, err := json.Marshal(resp)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	rs.Broker.Publish(rs.Config.AnswerQueue, data)
 }

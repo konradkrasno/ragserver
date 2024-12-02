@@ -11,3 +11,8 @@ type AddDocumentsRequest struct {
 type QueryRequest struct {
 	Content string `json:"content"`
 }
+
+type QueryResponse struct {
+	Query  string `json:"query"`
+	Answer string `json:"answer"`
+}

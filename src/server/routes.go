@@ -2,6 +2,7 @@ package server
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"github.com/konradkrasno/ragserver/models"
 	"log"
 	"net/http"
@@ -10,6 +11,7 @@ import (
 func (s *Server) registerRoutes() {
 	s.Router.POST("/rag/add", s.addDocumentsRoute)
 	s.Router.POST("/rag/query", s.queryRoute)
+	s.Router.GET("/ws", s.wsSendBrokerMessages)
 }
 
 func (s *Server) addDocumentsRoute(c *gin.Context) {
@@ -41,4 +43,17 @@ func (s *Server) queryRoute(c *gin.Context) {
 	go s.Rag.Query(rb)
 
 	c.JSON(http.StatusOK, gin.H{"status": "ok", "detail": "query is processed"})
+}
+
+func (s *Server) wsSendBrokerMessages(c *gin.Context) {
+	conn, err := s.Upgrader.Upgrade(c.Writer, c.Request, nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer conn.Close()
+
+	s.Broker.Listen(s.Config.AnswerQueue, func(msg []byte) error {
+		return conn.WriteMessage(websocket.TextMessage, msg)
+	})
 }
