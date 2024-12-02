@@ -11,7 +11,7 @@ import (
 func (s *Server) registerRoutes() {
 	s.Router.POST("/rag/add", s.addDocumentsRoute)
 	s.Router.POST("/rag/query", s.queryRoute)
-	s.Router.GET("/ws", s.wsSendBrokerMessages)
+	s.Router.GET("/ws/:sessionId", s.wsSendBrokerMessages)
 }
 
 func (s *Server) addDocumentsRoute(c *gin.Context) {
@@ -46,6 +46,11 @@ func (s *Server) queryRoute(c *gin.Context) {
 }
 
 func (s *Server) wsSendBrokerMessages(c *gin.Context) {
+	sessionId := c.Param("sessionId")
+	if sessionId == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "sessionId is required"})
+	}
+
 	conn, err := s.Upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
 		log.Println(err)
@@ -53,7 +58,7 @@ func (s *Server) wsSendBrokerMessages(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	s.Broker.Listen(s.Config.AnswerQueue, func(msg []byte) error {
+	s.Broker.Listen(s.Config.AnswerExchange, sessionId, func(msg []byte) error {
 		return conn.WriteMessage(websocket.TextMessage, msg)
 	})
 }

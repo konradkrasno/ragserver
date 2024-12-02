@@ -9,7 +9,8 @@ type AddDocumentsRequest struct {
 }
 
 type QueryRequest struct {
-	Content string `json:"content"`
+	SessionId string `json:"sessionId"`
+	Content   string `json:"content"`
 }
 
 type QueryResponse struct {

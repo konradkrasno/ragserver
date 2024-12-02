@@ -105,5 +105,6 @@ func (rs *Rag) Query(qr models.QueryRequest) {
 		log.Println(err)
 		return
 	}
-	rs.Broker.Publish(rs.Config.AnswerQueue, data)
+
+	rs.Broker.Publish(rs.Config.AnswerExchange, qr.SessionId, data)
 }

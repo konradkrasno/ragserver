@@ -2,6 +2,7 @@ package broker
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"time"
 
@@ -13,45 +14,31 @@ var (
 )
 
 type MQBroker struct {
-	Conn    *amqp.Connection
-	Channel *amqp.Channel
+	MQEndpoint string
 }
 
-func NewMQBroker(queueUrl string) (*MQBroker, error) {
-	conn, err := amqp.Dial(queueUrl)
-	if err != nil {
-		return nil, err
-	}
-
-	channel, err := conn.Channel()
-	if err != nil {
-		return nil, err
-	}
-
-	err = channel.Qos(1, 0, false)
-	if err != nil {
-		return nil, err
-	}
-
+func NewMQBroker(mqEndpoint string) *MQBroker {
 	return &MQBroker{
-		Conn:    conn,
-		Channel: channel,
-	}, nil
+		MQEndpoint: mqEndpoint,
+	}
 }
 
-func (mq *MQBroker) Close() {
-	mq.Channel.Close()
-	mq.Conn.Close()
-}
+func (mq *MQBroker) Publish(exchangeName, sessionId string, data []byte) {
+	conn, ch, err := mq.connect()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer ch.Close()
+	defer conn.Close()
 
-func (mq *MQBroker) Publish(queueName string, data []byte) {
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	err := mq.Channel.PublishWithContext(
+	err = ch.PublishWithContext(
 		ctx,
-		"",
-		queueName,
+		exchangeName,
+		getSessionRoutingKey(sessionId),
 		false,
 		false,
 		amqp.Publishing{
@@ -66,9 +53,30 @@ func (mq *MQBroker) Publish(queueName string, data []byte) {
 	}
 }
 
-func (mq *MQBroker) Listen(queueName string, process func([]byte) error) {
-	msgs, err := mq.Channel.Consume(
-		queueName,
+func (mq *MQBroker) Listen(exchangeName, sessionId string, process func([]byte) error) {
+	conn, ch, err := mq.connect()
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	defer ch.Close()
+	defer conn.Close()
+
+	q, err := ch.QueueDeclare(
+		fmt.Sprintf("%s-session-queue", sessionId),
+		false,
+		true,
+		false,
+		false,
+		nil)
+	if err != nil {
+		log.Println(err)
+		return
+	}
+	err = ch.QueueBind(q.Name, getSessionRoutingKey(sessionId), exchangeName, false, nil)
+
+	msgs, err := ch.Consume(
+		q.Name,
 		"",
 		false,
 		false,
@@ -85,6 +93,25 @@ func (mq *MQBroker) Listen(queueName string, process func([]byte) error) {
 
 	log.Printf(" [*] waiting for messages...")
 	<-forever
+}
+
+func (mq *MQBroker) connect() (*amqp.Connection, *amqp.Channel, error) {
+	conn, err := amqp.Dial(mq.MQEndpoint)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	ch, err := conn.Channel()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = ch.Qos(1, 0, false)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return conn, ch, nil
 }
 
 func (mq *MQBroker) handleMessage(msgs <-chan amqp.Delivery, process func([]byte) error) {
@@ -116,4 +143,8 @@ func nack(d amqp.Delivery) {
 	if err != nil {
 		log.Println(err)
 	}
+}
+
+func getSessionRoutingKey(sessionId string) string {
+	return fmt.Sprintf("session.%s", sessionId)
 }

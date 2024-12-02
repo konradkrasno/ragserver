@@ -14,11 +14,7 @@ func runServer() {
 		panic(err)
 	}
 
-	b, err := broker.NewMQBroker(cfg.QueueUrl)
-	if err != nil {
-		panic(err)
-	}
-	defer b.Close()
+	b := broker.NewMQBroker(cfg.MQEndpoint)
 
 	r, err := rag.New(cfg, b)
 	if err != nil {

@@ -15,8 +15,8 @@ type Config struct {
 	OllamaPort               string `yaml:"ollamaPort"`
 	IndexName                string `yaml:"indexName"`
 	DocumentsRetrievalNumber int    `yaml:"documentsRetrievalNumber"`
-	QueueUrl                 string `yaml:"queueUrl"`
-	AnswerQueue              string `yaml:"answerQueue"`
+	MQEndpoint               string `yaml:"mqEndpoint"`
+	AnswerExchange           string `yaml:"answerExchange"`
 }
 
 func LoadConfig(path string) (*Config, error) {
