@@ -17,6 +17,7 @@ type Config struct {
 	DocumentsRetrievalNumber int    `yaml:"documentsRetrievalNumber"`
 	MQEndpoint               string `yaml:"mqEndpoint"`
 	AnswerExchange           string `yaml:"answerExchange"`
+	FrontEndUrl              string `yaml:"frontEndUrl"`
 }
 
 func LoadConfig(path string) (*Config, error) {

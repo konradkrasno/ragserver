@@ -2,5 +2,6 @@ POST http://localhost:8000/rag/query
 Content-Type: application/json
 
 {
+  "sessionId": "<session id>",
   "content": "<question>"
 }

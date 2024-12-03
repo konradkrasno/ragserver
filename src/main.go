@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
 	"github.com/konradkrasno/ragserver/broker"
 	"github.com/konradkrasno/ragserver/config"
 	"github.com/konradkrasno/ragserver/rag"
@@ -21,7 +20,7 @@ func runServer() {
 		panic(err)
 	}
 
-	s := server.New(cfg, gin.Default(), r, b)
+	s := server.New(cfg, r, b)
 
 	err = s.Run()
 	if err != nil {
