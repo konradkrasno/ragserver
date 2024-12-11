@@ -179,8 +179,13 @@
         const copyChatButton = document.getElementById('copyChat');
         const darkModeToggle = document.getElementById('darkModeToggle');
         const notificationBar = document.getElementById('notificationBar');
+
         const sessionId = Date.now()
-        const socket = new WebSocket(`ws://localhost:8000/ws/${sessionId}`);
+
+        const backendHost = process.env.BACKEND_HOST;
+        const backendPort = process.env.BACKEND_PORT;
+        const socket = new WebSocket(`ws://${backendHost}:${backendPort}/ws/${sessionId}`);
+
         let chatContext = ""
         let thinkingMessage
 
@@ -351,6 +356,7 @@
             }
         });
 
+        // Start WebSocket connection and display received messages
         socket.addEventListener("message", (event) => {
             const msg = JSON.parse(event.data);
             console.log("answer:", msg);

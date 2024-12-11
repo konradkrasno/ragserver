@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: rabbitmq
+  namespace: rag
+spec:
+  selector:
+    app: rabbitmq
+  ports:
+    - name: http
+      port: 5672
+      targetPort: 5672
+    - name: dashboard
+      port: 15672
+      targetPort: 15672

@@ -7,6 +7,6 @@ ollamaUrl: "http://ollama.rag.svc.cluster.local"
 ollamaPort: "11434"
 indexName: "Document"
 documentsRetrievalNumber: 3
-mqEndpoint: "amqp://guest:guest@rabbit.rag.svc.cluster.local:5672/%2F"
+mqEndpoint: "amqp://guest:guest@rabbitmq.rag.svc.cluster.local:5672/%2F"
 answerExchange: "answers-topic"
 frontEndUrl: "http://localhost:63342"
