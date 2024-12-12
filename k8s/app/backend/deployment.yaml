@@ -28,4 +28,4 @@ spec:
           - name: LLM
             value: "llama3.2:1b"
           - name: ALLOWED_ORIGINS
-            value: *
+            value: "*"
