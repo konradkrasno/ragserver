@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/konradkrasno/ragserver/broker"
-	"github.com/konradkrasno/ragserver/config"
+	"github.com/konradkrasno/ragserver/environment"
 	"github.com/konradkrasno/ragserver/models"
 	"github.com/tmc/langchaingo/embeddings"
 	"github.com/tmc/langchaingo/llms"
@@ -18,18 +18,22 @@ import (
 
 type Rag struct {
 	Ctx       context.Context
-	Config    *config.Config
+	Envs      *environment.Envs
 	WvStore   weaviate.Store
 	LLMClient llms.Model
 	Broker    broker.Broker
 }
 
-func New(cfg *config.Config, broker broker.Broker) (*Rag, error) {
+func New(envs *environment.Envs, broker broker.Broker) (*Rag, error) {
 	ctx := context.Background()
 
 	ollamaClient, err := ollama.New(
-		ollama.WithServerURL(fmt.Sprintf("%s:%s", cfg.OllamaUrl, cfg.OllamaPort)),
-		ollama.WithModel(cfg.LLM),
+		ollama.WithServerURL(
+			fmt.Sprintf(
+				"%s:%s", fmt.Sprintf("http://%s", envs.OllamaHost), envs.OllamaPort,
+			),
+		),
+		ollama.WithModel(envs.LLM),
 	)
 	if err != nil {
 		return nil, err
@@ -42,9 +46,9 @@ func New(cfg *config.Config, broker broker.Broker) (*Rag, error) {
 
 	wvStore, err := weaviate.New(
 		weaviate.WithEmbedder(emb),
-		weaviate.WithScheme(cfg.Scheme),
-		weaviate.WithHost(fmt.Sprintf("%s:%s", cfg.WvHost, cfg.WvPort)),
-		weaviate.WithIndexName(cfg.IndexName),
+		weaviate.WithScheme(envs.WvScheme),
+		weaviate.WithHost(fmt.Sprintf("%s:%s", envs.WvHost, envs.WvPort)),
+		weaviate.WithIndexName(envs.WvIndexName),
 	)
 	if err != nil {
 		return nil, err
@@ -52,7 +56,7 @@ func New(cfg *config.Config, broker broker.Broker) (*Rag, error) {
 
 	return &Rag{
 		Ctx:       ctx,
-		Config:    cfg,
+		Envs:      envs,
 		WvStore:   wvStore,
 		LLMClient: ollamaClient,
 		Broker:    broker,
@@ -76,7 +80,7 @@ func (rs *Rag) AddDocuments(adr models.AddDocumentsRequest) error {
 }
 
 func (rs *Rag) query(qr models.QueryRequest) (string, error) {
-	docs, err := rs.WvStore.SimilaritySearch(rs.Ctx, qr.Content, rs.Config.DocumentsRetrievalNumber)
+	docs, err := rs.WvStore.SimilaritySearch(rs.Ctx, qr.Content, rs.Envs.WvDocumentsRetrievalNumber)
 	if err != nil {
 		return "", err
 	}
@@ -86,7 +90,7 @@ func (rs *Rag) query(qr models.QueryRequest) (string, error) {
 	}
 
 	ragQuery := fmt.Sprintf(ragTemplateStr, qr.Content, strings.Join(docContents, "\n"))
-	return llms.GenerateFromSinglePrompt(rs.Ctx, rs.LLMClient, ragQuery, llms.WithModel(rs.Config.LLM))
+	return llms.GenerateFromSinglePrompt(rs.Ctx, rs.LLMClient, ragQuery, llms.WithModel(rs.Envs.LLM))
 }
 
 func (rs *Rag) Query(qr models.QueryRequest) {
@@ -106,5 +110,5 @@ func (rs *Rag) Query(qr models.QueryRequest) {
 		return
 	}
 
-	rs.Broker.Publish(rs.Config.AnswerExchange, qr.SessionId, data)
+	rs.Broker.Publish(rs.Envs.RabbitMQAnswerExchange, qr.SessionId, data)
 }

@@ -182,8 +182,8 @@
 
         const sessionId = Date.now()
 
-        const backendHost = process.env.BACKEND_HOST;
-        const backendPort = process.env.BACKEND_PORT;
+        const backendHost = process.env.BACKEND_SERVICE_HOST;
+        const backendPort = process.env.BACKEND_SERVICE_PORT;
         const socket = new WebSocket(`ws://${backendHost}:${backendPort}/ws/${sessionId}`);
 
         let chatContext = ""

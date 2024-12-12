@@ -3,11 +3,14 @@ package broker
 import (
 	"context"
 	"fmt"
+	"github.com/konradkrasno/ragserver/environment"
 	"log"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
+
+const MQEndpointFormat = "%s://%s:%s@%s:%s"
 
 var (
 	forever chan struct{}
@@ -17,9 +20,16 @@ type MQBroker struct {
 	MQEndpoint string
 }
 
-func NewMQBroker(mqEndpoint string) *MQBroker {
+func NewMQBroker(envs *environment.Envs) *MQBroker {
 	return &MQBroker{
-		MQEndpoint: mqEndpoint,
+		MQEndpoint: fmt.Sprintf(
+			MQEndpointFormat,
+			envs.RabbitMQProtocol,
+			envs.RabbitMQUsername,
+			envs.RabbitMQPassword,
+			envs.RabbitMQHost,
+			envs.RabbitMQPort,
+		),
 	}
 }
 

@@ -6,33 +6,34 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
 	"github.com/konradkrasno/ragserver/broker"
-	"github.com/konradkrasno/ragserver/config"
+	"github.com/konradkrasno/ragserver/environment"
 	"github.com/konradkrasno/ragserver/rag"
 	"net/http"
+	"strings"
 	"time"
 )
 
 type Server struct {
-	Config   *config.Config
+	Envs     *environment.Envs
 	Router   *gin.Engine
 	Rag      *rag.Rag
 	Upgrader *websocket.Upgrader
 	Broker   broker.Broker
 }
 
-func New(cfg *config.Config, rag *rag.Rag, broker broker.Broker) *Server {
+func New(envs *environment.Envs, rag *rag.Rag, broker broker.Broker) *Server {
 	return &Server{
-		Config:   cfg,
+		Envs:     envs,
 		Router:   getRouter(),
 		Rag:      rag,
-		Upgrader: getUpgrader(cfg),
+		Upgrader: getUpgrader(envs),
 		Broker:   broker,
 	}
 }
 
 func (s *Server) Run() error {
 	s.registerRoutes()
-	return s.Router.Run(fmt.Sprintf(":%s", s.Config.AppPort))
+	return s.Router.Run(fmt.Sprintf(":%s", s.Envs.AppPort))
 }
 
 func getRouter() *gin.Engine {
@@ -55,14 +56,22 @@ func configureRouter(router *gin.Engine) {
 	router.Use(cors.New(routerConfig))
 }
 
-func getUpgrader(config *config.Config) *websocket.Upgrader {
+func getUpgrader(envs *environment.Envs) *websocket.Upgrader {
 	return &websocket.Upgrader{
 		ReadBufferSize:  1024,
 		WriteBufferSize: 1024,
 		CheckOrigin: func(r *http.Request) bool {
-			if r.Header.Get("Origin") == config.FrontEndUrl {
+			if envs.AllowedOrigins == "*" {
 				return true
 			}
+
+			origin := r.Header.Get("Origin")
+			for _, allowedOrigin := range strings.Split(envs.AllowedOrigins, ",") {
+				if allowedOrigin == origin {
+					return true
+				}
+			}
+
 			return false
 		},
 	}

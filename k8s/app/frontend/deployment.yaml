@@ -20,8 +20,3 @@ spec:
         - image: localhost:32000/ragserver-frontend
           name: frontend
           resources: {}
-          env:
-            - name: BACKEND_HOST
-              value: "backend.rag.svc.cluster.local"
-            - name: BACKEND_PORT
-              value: "8000"

@@ -20,3 +20,12 @@ spec:
       - image: localhost:32000/ragserver
         name: backend
         resources: {}
+        env:
+          - name: RABBITMQ_USERNAME
+            value: "guest"
+          - name: RABBITMQ_PASSWORD
+            value: "guest"
+          - name: LLM
+            value: "llama3.2:1b"
+          - name: ALLOWED_ORIGINS
+            value: *
