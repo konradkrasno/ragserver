@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log("chatContext", chatContext);
 
             // Query RAG
-            fetch("http://localhost:8000/rag/query", {
+            fetch(`http://${backendHost}:${backendPort}/rag/query`, {
                 method: "POST",
                 body: JSON.stringify({
                     sessionId: `${sessionId}`,
