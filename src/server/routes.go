@@ -58,7 +58,11 @@ func (s *Server) wsSendBrokerMessages(c *gin.Context) {
 	}
 	defer conn.Close()
 
-	s.Broker.Listen(s.Envs.RabbitMQAnswerExchange, sessionId, func(msg []byte) error {
+	err = s.Broker.Listen(s.Envs.RabbitMQAnswerExchange, sessionId, func(msg []byte) error {
 		return conn.WriteMessage(websocket.TextMessage, msg)
 	})
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }

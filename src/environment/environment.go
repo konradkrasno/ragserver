@@ -20,6 +20,7 @@ type Envs struct {
 	RabbitMQPassword           string `env:"RABBITMQ_PASSWORD"`
 	RabbitMQHost               string `env:"RABBITMQ_SERVICE_HOST"`
 	RabbitMQPort               string `env:"RABBITMQ_SERVICE_PORT" envDefault:"5672"`
+	RabbitMQVHost              string `env:"RABBITMQ_VHOST" envDefault:"/%2F"`
 	LLM                        string `env:"LLM"`
 	RabbitMQAnswerExchange     string `env:"RABBITMQ_ANSWER_EXCHANGE" envDefault:"answers-topic"`
 }

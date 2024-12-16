@@ -110,5 +110,9 @@ func (rs *Rag) Query(qr models.QueryRequest) {
 		return
 	}
 
-	rs.Broker.Publish(rs.Envs.RabbitMQAnswerExchange, qr.SessionId, data)
+	err = rs.Broker.Publish(rs.Envs.RabbitMQAnswerExchange, qr.SessionId, data)
+	if err != nil {
+		log.Println(err)
+		return
+	}
 }

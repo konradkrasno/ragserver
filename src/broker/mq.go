@@ -10,7 +10,7 @@ import (
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
-const MQEndpointFormat = "%s://%s:%s@%s:%s"
+const MQEndpointFormat = "%s://%s:%s@%s:%s%s"
 
 var (
 	forever chan struct{}
@@ -29,15 +29,15 @@ func NewMQBroker(envs *environment.Envs) *MQBroker {
 			envs.RabbitMQPassword,
 			envs.RabbitMQHost,
 			envs.RabbitMQPort,
+			envs.RabbitMQVHost,
 		),
 	}
 }
 
-func (mq *MQBroker) Publish(exchangeName, sessionId string, data []byte) {
+func (mq *MQBroker) Publish(exchangeName, sessionId string, data []byte) error {
 	conn, ch, err := mq.connect()
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	defer ch.Close()
 	defer conn.Close()
@@ -57,17 +57,17 @@ func (mq *MQBroker) Publish(exchangeName, sessionId string, data []byte) {
 			Body:         data,
 		})
 	if err != nil {
-		log.Println(err)
-	} else {
-		log.Printf(" [x] sent message")
+		return err
 	}
+
+	log.Printf(" [x] sent message")
+	return nil
 }
 
-func (mq *MQBroker) Listen(exchangeName, sessionId string, process func([]byte) error) {
+func (mq *MQBroker) Listen(exchangeName, sessionId string, process func([]byte) error) error {
 	conn, ch, err := mq.connect()
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	defer ch.Close()
 	defer conn.Close()
@@ -80,8 +80,7 @@ func (mq *MQBroker) Listen(exchangeName, sessionId string, process func([]byte) 
 		false,
 		nil)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 	err = ch.QueueBind(q.Name, getSessionRoutingKey(sessionId), exchangeName, false, nil)
 
@@ -95,14 +94,15 @@ func (mq *MQBroker) Listen(exchangeName, sessionId string, process func([]byte) 
 		nil,
 	)
 	if err != nil {
-		log.Println(err)
-		return
+		return err
 	}
 
 	go mq.handleMessage(msgs, process)
 
 	log.Printf(" [*] waiting for messages...")
 	<-forever
+
+	return nil
 }
 
 func (mq *MQBroker) connect() (*amqp.Connection, *amqp.Channel, error) {
