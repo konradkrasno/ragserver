@@ -17,6 +17,6 @@ spec:
         app: frontend
     spec:
       containers:
-        - image: localhost:32000/ragserver-frontend
+        - image: localhost:32000/rag-ui:0.0.5
           name: frontend
           resources: {}

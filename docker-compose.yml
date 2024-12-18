@@ -1,16 +1,4 @@
 services:
-  frontend:
-    build:
-      context: ./ui
-      dockerfile: Dockerfile
-    ports:
-      - "80:80"
-    depends_on:
-      - backend
-    environment:
-      - BACKEND_HOST=backend
-      - BACKEND_PORT=8000
-
   backend:
     build:
       context: .
@@ -20,6 +8,16 @@ services:
     depends_on:
       - rabbitmq
       - weaviate
+
+  frontend:
+    image: rag-ui:0.0.5
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    environment:
+      - REACT_APP_BACKEND_SERVICE_HOST=backend
+      - REACT_APP_BACKEND_SERVICE_PORT=8000
 
   weaviate:
     image: semitechnologies/weaviate:latest
