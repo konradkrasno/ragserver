@@ -18,9 +18,15 @@ jobs:
     name: Calculate Hashes
     uses: ./.github/workflows/hashes.yaml
 
-  app_build:
-    name: Build app
+  docker_build:
+    name: Build and Push Docker
+    needs: [hashes]
     runs-on: self-hosted
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      pushed_image: ${{ steps.push.outputs.pushed_image }}
 
     steps:
       - name: Checkout code
@@ -36,20 +42,6 @@ jobs:
           cd src
           go mod download
           CGO_ENABLED=0 GOOS=linux go build -o ./ragserver
-
-  docker_build:
-    name: Build and Push Docker
-    needs: [hashes, app_build]
-    runs-on: self-hosted
-    permissions:
-      id-token: write
-      contents: read
-    outputs:
-      pushed_image: ${{ steps.push.outputs.pushed_image }}
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
