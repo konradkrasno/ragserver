@@ -77,13 +77,13 @@ jobs:
           tags: ${{ steps.metadata.outputs.tags }}
           labels: ${{ steps.metadata.outputs.labels }}
 
-#  trigger_deploy:
-#    if: ${{ inputs.deploy-cd }}
-#    name: Trigger CD
-#    needs: [docker_build]
-#    uses: ./.github/workflows/cd.yaml
-#    permissions:
-#      id-token: write
-#      contents: read
-#    with:
-#      image: ${{ needs.docker_build.outputs.pushed_image }}
+  trigger_deploy:
+    if: ${{ inputs.deploy-cd }}
+    name: Trigger CD
+    needs: [docker_build]
+    uses: ./.github/workflows/cd.yaml
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      image: ${{ needs.docker_build.outputs.pushed_image }}
