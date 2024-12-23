@@ -1,0 +1,22 @@
+name: Unit Tests
+on:
+  workflow_call:
+    inputs:
+      go-version:
+        type: string
+        default: 1.23
+
+jobs:
+  unit-tests:
+    name: Unit Tests
+    runs-on: self-hosted
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ inputs.go-version }}
+      - name: run tests
+        run: |
+          cd src && go install && go test -v ./...

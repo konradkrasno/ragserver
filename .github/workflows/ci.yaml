@@ -1,0 +1,89 @@
+name: CI
+on:
+  workflow_dispatch:
+    inputs:
+      deploy-cd:
+        description: "Deploy CD"
+        type: boolean
+  push:
+    branches:
+      - main
+    tags:
+      - 'v*'
+
+permissions: read-all
+
+jobs:
+  hashes:
+    name: Calculate Hashes
+    uses: ./.github/workflows/hashes.yaml
+
+  app_build:
+    name: Build app
+    runs-on: self-hosted
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 1.23.2
+
+      - name: build app
+        run: |
+          cd src
+          go mod download
+          CGO_ENABLED=0 GOOS=linux go build -o ./ragserver
+
+  docker_build:
+    name: Build and Push Docker
+    needs: [hashes, app_build]
+    runs-on: self-hosted
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      pushed_image: ${{ steps.push.outputs.pushed_image }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ vars.AWS_REGION }}
+          role-session-name: dev-env
+          role-to-assume: ${{ vars.OIDC_IAM_ROLE_ARN }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Get ECR Metadata
+        uses: docker/metadata-action@v5
+        id: metadata
+        with:
+          images: ${{ vars.ECR_URL }}
+          tags: ${{ needs.hashes.outputs.FILES_HASH }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.metadata.outputs.tags }}
+          labels: ${{ steps.metadata.outputs.labels }}
+
+  trigger_deploy:
+    if: ${{ inputs.deploy-cd }}
+    name: Trigger CD
+    needs: [docker_build]
+    uses: ./.github/workflows/cd.yaml
+    permissions:
+      id-token: write
+      contents: read
+    with:
+      image: ${{ needs.docker_build.outputs.pushed_image }}

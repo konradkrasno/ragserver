@@ -17,7 +17,7 @@ spec:
         app: backend
     spec:
       containers:
-      - image: localhost:32000/ragserver
+      - image: {{ IMAGE }}
         name: backend
         resources: {}
         env:

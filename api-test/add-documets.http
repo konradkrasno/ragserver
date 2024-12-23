@@ -1,4 +1,4 @@
-POST http://localhost:8000/rag/add
+POST http://localhost:8000/api/rag/add
 Content-Type: application/json
 
 {

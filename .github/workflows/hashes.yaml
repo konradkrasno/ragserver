@@ -1,0 +1,22 @@
+name: Calculate Hashed
+on:
+  workflow_call:
+    outputs:
+      FILES_HASH:
+        value: ${{ jobs.hashes.outputs.FILES_HASH }}
+
+permissions: read-all
+
+jobs:
+  hashes:
+    name: Calculate hashes
+    runs-on: self-hosted
+    outputs:
+      FILES_HASH: ${{ steps.hashes.outputs.FILES_HASH }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Get hashes
+        id: hashes
+        run: |
+          echo "FILES_HASH=$(sha1sum ./src/* ./Dockerfile | sha1sum | head -c 40)" >> "$GITHUB_OUTPUT"

@@ -1,0 +1,27 @@
+name: CD
+run-name: Deploy to DEV by @${{ github.actor }}
+on:
+  workflow_dispatch:
+    inputs:
+      image:
+        description: Docker image
+        type: string
+        required: true
+  workflow_call:
+    inputs:
+      image:
+        type: string
+
+jobs:
+  deploy:
+    name: Deploy to DEV
+    runs-on: self-hosted
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Deploy to k8s
+        run: |
+          sed -e "s#{{ IMAGE }}#${{ inputs.image }}#g" ./k8s/app/backend/deployment.yaml.template > ./k8s/app/backend/deployment.yaml
+          microk8s kubectl apply -f ./k8s/app/backend
