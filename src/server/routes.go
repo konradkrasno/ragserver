@@ -11,7 +11,7 @@ import (
 func (s *Server) registerRoutes() {
 	s.Router.POST("/api/rag/add", s.addDocumentsRoute)
 	s.Router.POST("/api/rag/query", s.queryRoute)
-	s.Router.GET("/api/ws/:sessionId", s.wsSendBrokerMessages)
+	s.Router.GET("/ws/:sessionId", s.wsSendBrokerMessages)
 }
 
 func (s *Server) addDocumentsRoute(c *gin.Context) {

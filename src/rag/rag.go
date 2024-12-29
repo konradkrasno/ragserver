@@ -91,6 +91,7 @@ func (rs *Rag) Query(qr models.QueryRequest) {
 	}
 
 	ragQuery := fmt.Sprintf(ragTemplateStr, qr.Content, strings.Join(docContents, "\n"))
+	queryId := uuid.New().String()
 	_, err = llms.GenerateFromSinglePrompt(
 		rs.Ctx,
 		rs.LLMClient,
@@ -98,7 +99,7 @@ func (rs *Rag) Query(qr models.QueryRequest) {
 		llms.WithModel(rs.Envs.LLM),
 		llms.WithStreamingFunc(func(ctx context.Context, chunk []byte) error {
 			item := make(map[string]interface{})
-			item["id"] = uuid.New().String()
+			item["id"] = queryId
 			item["chunk"] = string(chunk)
 			data, err := json.Marshal(item)
 			if err != nil {
