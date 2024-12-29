@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/konradkrasno/ragserver/broker"
 	"github.com/konradkrasno/ragserver/environment"
 	"github.com/konradkrasno/ragserver/models"
@@ -12,7 +13,6 @@ import (
 	"github.com/tmc/langchaingo/llms/ollama"
 	"github.com/tmc/langchaingo/schema"
 	"github.com/tmc/langchaingo/vectorstores/weaviate"
-	"log"
 	"strings"
 )
 
@@ -79,10 +79,11 @@ func (rs *Rag) AddDocuments(adr models.AddDocumentsRequest) error {
 	return nil
 }
 
-func (rs *Rag) query(qr models.QueryRequest) (string, error) {
+func (rs *Rag) Query(qr models.QueryRequest) {
 	docs, err := rs.WvStore.SimilaritySearch(rs.Ctx, qr.Content, rs.Envs.WvDocumentsRetrievalNumber)
 	if err != nil {
-		return "", err
+		fmt.Println(err)
+		return
 	}
 	docContents := make([]string, len(docs))
 	for i, doc := range docs {
@@ -90,29 +91,25 @@ func (rs *Rag) query(qr models.QueryRequest) (string, error) {
 	}
 
 	ragQuery := fmt.Sprintf(ragTemplateStr, qr.Content, strings.Join(docContents, "\n"))
-	return llms.GenerateFromSinglePrompt(rs.Ctx, rs.LLMClient, ragQuery, llms.WithModel(rs.Envs.LLM))
-}
+	_, err = llms.GenerateFromSinglePrompt(
+		rs.Ctx,
+		rs.LLMClient,
+		ragQuery,
+		llms.WithModel(rs.Envs.LLM),
+		llms.WithStreamingFunc(func(ctx context.Context, chunk []byte) error {
+			item := make(map[string]interface{})
+			item["id"] = uuid.New().String()
+			item["chunk"] = string(chunk)
+			data, err := json.Marshal(item)
+			if err != nil {
+				return err
+			}
 
-func (rs *Rag) Query(qr models.QueryRequest) {
-	answer, err := rs.query(qr)
+			return rs.Broker.Publish(rs.Envs.RabbitMQAnswerExchange, qr.SessionId, data)
+		}),
+	)
 	if err != nil {
-		log.Println(err)
-		answer = fmt.Sprintf("error occurred: %s", err)
-	}
-
-	resp := models.QueryResponse{
-		Query:  qr.Content,
-		Answer: answer,
-	}
-	data, err := json.Marshal(resp)
-	if err != nil {
-		log.Println(err)
-		return
-	}
-
-	err = rs.Broker.Publish(rs.Envs.RabbitMQAnswerExchange, qr.SessionId, data)
-	if err != nil {
-		log.Println(err)
+		fmt.Println(err)
 		return
 	}
 }
