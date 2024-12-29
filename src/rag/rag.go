@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"github.com/konradkrasno/ragserver/broker"
 	"github.com/konradkrasno/ragserver/environment"
 	"github.com/konradkrasno/ragserver/models"
@@ -12,7 +13,6 @@ import (
 	"github.com/tmc/langchaingo/llms/ollama"
 	"github.com/tmc/langchaingo/schema"
 	"github.com/tmc/langchaingo/vectorstores/weaviate"
-	"hash/fnv"
 	"strings"
 )
 
@@ -91,7 +91,6 @@ func (rs *Rag) Query(qr models.QueryRequest) {
 	}
 
 	ragQuery := fmt.Sprintf(ragTemplateStr, qr.Content, strings.Join(docContents, "\n"))
-	hashedQuery := hash(ragQuery)
 	_, err = llms.GenerateFromSinglePrompt(
 		rs.Ctx,
 		rs.LLMClient,
@@ -99,8 +98,8 @@ func (rs *Rag) Query(qr models.QueryRequest) {
 		llms.WithModel(rs.Envs.LLM),
 		llms.WithStreamingFunc(func(ctx context.Context, chunk []byte) error {
 			item := make(map[string]interface{})
-			item["id"] = hashedQuery
-			item["content"] = chunk
+			item["id"] = uuid.New().String()
+			item["chunk"] = string(chunk)
 			data, err := json.Marshal(item)
 			if err != nil {
 				return err
@@ -113,10 +112,4 @@ func (rs *Rag) Query(qr models.QueryRequest) {
 		fmt.Println(err)
 		return
 	}
-}
-
-func hash(s string) uint32 {
-	h := fnv.New32a()
-	h.Write([]byte(s))
-	return h.Sum32()
 }
