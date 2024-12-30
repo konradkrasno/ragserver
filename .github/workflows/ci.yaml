@@ -70,7 +70,7 @@ jobs:
           labels: ${{ steps.metadata.outputs.labels }}
 
   trigger_deploy:
-    if: ${{ inputs.deploy-cd || github.event.pull_request.merged }}
+    if: ${{ inputs.deploy-cd || github.event.pull_request.merged == true }}
     name: Trigger CD
     needs: [docker_build]
     uses: ./.github/workflows/cd.yaml
