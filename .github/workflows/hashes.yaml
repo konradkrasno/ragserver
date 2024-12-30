@@ -19,4 +19,5 @@ jobs:
       - name: Get hashes
         id: hashes
         run: |
-          echo "FILES_HASH=$(sha1sum ./src/* ./Dockerfile | sha1sum | head -c 40)" >> "$GITHUB_OUTPUT"
+          FILES="./src ./Dockerfile"
+          echo "FILES_HASH=$(sha1sum $(find ${FILES} -type f -print0 | xargs -0) | sha1sum | head -c 40)" >> "$GITHUB_OUTPUT"
