@@ -26,8 +26,17 @@ spec:
           - name: RABBITMQ_PASSWORD
             value: "guest"
           - name: LLM
-            value: "llama3.2:1b"
+            value: "llama3.2"
           - name: ALLOWED_ORIGINS
             value: "*"
       imagePullSecrets:
         - name: ecrcred
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+                - key: kubernetes.io/hostname
+                  operator: In
+                  values:
+                    - raspberrypi

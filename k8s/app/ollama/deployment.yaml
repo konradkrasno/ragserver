@@ -19,3 +19,13 @@ spec:
             - name: http
               containerPort: 11434
               protocol: TCP
+      affinity:
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 1
+              preference:
+                matchExpressions:
+                  - key: kubernetes.io/hostname
+                    operator: In
+                    values:
+                      - konrad-lenovo-legion-y530-15ich
