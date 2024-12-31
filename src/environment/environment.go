@@ -6,7 +6,7 @@ import (
 )
 
 type Envs struct {
-	AppPort                    string `env:"BACKEND_SERVICE_PORT" envDefault:"8000"`
+	AppPort                    string `env:"BACKEND_SERVICE_PORT" envDefault:"8080"`
 	AllowedOrigins             string `env:"ALLOWED_ORIGINS"`
 	OllamaHost                 string `env:"OLLAMA_SERVICE_HOST"`
 	OllamaPort                 string `env:"OLLAMA_SERVICE_PORT" envDefault:"11434"`

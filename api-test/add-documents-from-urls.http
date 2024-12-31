@@ -1,0 +1,8 @@
+POST http://localhost:8080/rag/api/addFromUrl
+Content-Type: application/json
+
+{
+  "urls": [
+    "<url>"
+  ]
+}

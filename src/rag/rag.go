@@ -13,6 +13,7 @@ import (
 	"github.com/tmc/langchaingo/llms/ollama"
 	"github.com/tmc/langchaingo/schema"
 	"github.com/tmc/langchaingo/vectorstores/weaviate"
+	"log"
 	"strings"
 )
 
@@ -63,7 +64,7 @@ func New(envs *environment.Envs, broker broker.Broker) (*Rag, error) {
 	}, nil
 }
 
-func (rs *Rag) AddDocuments(adr models.AddDocumentsRequest) error {
+func (rs *Rag) AddDocuments(adr models.AddDocumentsRequest) {
 	wvDocs := make([]schema.Document, len(adr.Documents))
 	for i, doc := range adr.Documents {
 		wvDocs[i] = schema.Document{
@@ -73,10 +74,10 @@ func (rs *Rag) AddDocuments(adr models.AddDocumentsRequest) error {
 
 	_, err := rs.WvStore.AddDocuments(rs.Ctx, wvDocs)
 	if err != nil {
-		return err
+		log.Println("error adding documents", err)
 	}
 
-	return nil
+	log.Println("documents added successfully")
 }
 
 func (rs *Rag) Query(qr models.QueryRequest) {

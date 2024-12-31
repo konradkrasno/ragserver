@@ -8,6 +8,10 @@ type AddDocumentsRequest struct {
 	Documents []Document `json:"documents"`
 }
 
+type AddDocumentsFromUrlsRequest struct {
+	Urls []string `json:"urls"`
+}
+
 type QueryRequest struct {
 	SessionId string `json:"sessionId"`
 	Content   string `json:"content"`
